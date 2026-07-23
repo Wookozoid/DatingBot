@@ -1,3 +1,8 @@
+# Бот
 aiogram==3.15.0
 pydantic-settings==2.6.1
 python-dotenv==1.0.1
+
+# БД
+SQLAlchemy[asyncio]==2.0.36
+aiosqlite==0.20.0

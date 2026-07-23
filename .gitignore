@@ -1,4 +1,5 @@
 .env
+storage/bot.db
 __pycache__/
 *.pyc
 .venv/

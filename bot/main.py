@@ -1,30 +1,49 @@
 import asyncio
+import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram.types import ErrorEvent
 
 from bot.config import settings
+from bot.handlers.onboarding import router as onboarding_router
+from bot.logger import setup_logging
+from storage.database import init_db
+
+logger = logging.getLogger(__name__)
 
 dp = Dispatcher()
+dp.include_router(onboarding_router)
 
 
-@dp.message(CommandStart())
-async def cmd_start(message: Message) -> None:
-    await message.answer(
-        "Привет! Я бот для знакомств.\n"
-        "Я буду подбирать вам людей по вайбику."
+@dp.errors()
+async def handle_errors(event: ErrorEvent) -> None:
+    """
+    Ловит любое необработанное исключени пишет его в лог.
+    """
+    logger.exception(
+        "Ошибка при обработке апдейта %s: %s",
+        event.update.update_id,
+        event.exception,
     )
 
 
 async def main() -> None:
+    setup_logging()
+
+    await init_db()
+    logger.info("База данных готова")
+
     bot = Bot(
         token=settings.BOT_TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
-    await dp.start_polling(bot)
+
+    try:
+        await dp.start_polling(bot)
+    finally:
+        logger.info("Бот остановлен")
 
 
 if __name__ == "__main__":
