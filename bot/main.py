@@ -7,15 +7,19 @@ from aiogram.enums import ParseMode
 from aiogram.types import ErrorEvent
 
 from bot.config import settings
+from bot.handlers.browsing import router as browsing_router
 from bot.handlers.onboarding import router as onboarding_router
-from bot.services.embedding import get_embedding_service
+from bot.handlers.profile import router as profile_router
 from bot.logger import setup_logging
+from bot.services.embedding import get_embedding_service
 from storage.database import init_db
 
 logger = logging.getLogger(__name__)
 
 dp = Dispatcher()
 dp.include_router(onboarding_router)
+dp.include_router(browsing_router)
+dp.include_router(profile_router)
 
 
 @dp.errors()
@@ -44,6 +48,7 @@ async def main() -> None:
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
+    logger.info("Бот запускается...")
     try:
         await dp.start_polling(bot)
     finally:

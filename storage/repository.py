@@ -3,6 +3,7 @@
 """
 import json
 
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from storage.models import User, Gender
@@ -49,3 +50,34 @@ def get_embedding(user: User) -> list[float] | None:
     if user.embedding is None:
         return None
     return json.loads(user.embedding)
+
+
+async def get_candidates(session: AsyncSession, user: User, limit: int) -> list[User]:
+    """
+    Подбор кандидатов ПОКА БЕЗ ML!
+    """
+    query = (
+        select(User)
+        .where(
+            User.id != user.id,
+            User.gender == user.looking_for,
+            User.looking_for == user.gender,
+        )
+        .order_by(func.random())
+        .limit(limit)
+    )
+    result = await session.execute(query)
+    return list(result.scalars().all())
+
+
+async def delete_user(session: AsyncSession, user_id: int) -> bool:
+    """
+    Удаляет анкету пользователя.
+    Возвращает True, если анкета была и удалена.
+    """
+    user = await session.get(User, user_id)
+    if user is None:
+        return False
+    await session.delete(user)
+    await session.commit()
+    return True
