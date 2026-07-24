@@ -8,6 +8,7 @@ from aiogram.types import ErrorEvent
 
 from bot.config import settings
 from bot.handlers.onboarding import router as onboarding_router
+from bot.services.embedding import get_embedding_service
 from bot.logger import setup_logging
 from storage.database import init_db
 
@@ -34,6 +35,9 @@ async def main() -> None:
 
     await init_db()
     logger.info("База данных готова")
+
+    get_embedding_service()
+    logger.info("Модель эмбеддингов готова")
 
     bot = Bot(
         token=settings.BOT_TOKEN,

@@ -14,6 +14,8 @@ from storage.database import get_session
 from storage.models import Gender
 from storage.repository import get_user, create_user
 
+from bot.services.embedding import get_embedding_service
+
 logger = logging.getLogger(__name__)
 
 router = Router(name="onboarding")
@@ -121,6 +123,10 @@ async def process_photo(message: Message, state: FSMContext) -> None:
     data = await state.update_data(photo_file_id=message.photo[-1].file_id)
     await state.clear()
 
+    embedding_service = get_embedding_service()
+    embedding = embedding_service.encode(data["bio_text"])
+    logger.debug("Построен эмбеддинг для пользователя %s", message.from_user.id)
+
     async with get_session() as session:
         await create_user(
             session,
@@ -132,6 +138,7 @@ async def process_photo(message: Message, state: FSMContext) -> None:
             city=data["city"],
             bio_text=data["bio_text"],
             photo_file_id=data["photo_file_id"],
+            embedding=embedding,
         )
 
     logger.info("Пользователь %s зарегистрирован", message.from_user.id)

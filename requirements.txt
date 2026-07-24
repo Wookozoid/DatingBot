@@ -6,3 +6,7 @@ python-dotenv==1.0.1
 # БД
 SQLAlchemy[asyncio]==2.0.36
 aiosqlite==0.20.0
+
+# ML-часть
+sentence-transformers==3.3.1
+numpy==1.26.4

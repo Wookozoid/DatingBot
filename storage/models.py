@@ -28,5 +28,6 @@ class User(Base):
     city: Mapped[str] = mapped_column(String(128))
     bio_text: Mapped[str] = mapped_column(Text)
     photo_file_id: Mapped[str] = mapped_column(String(256))
+    embedding: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

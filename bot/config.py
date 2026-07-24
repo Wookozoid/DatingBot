@@ -14,5 +14,8 @@ class Settings(BaseSettings):
 
     LOG_LEVEL: str = "INFO"
 
+    EMBEDDING_MODEL_NAME: str = "paraphrase-multilingual-MiniLM-L12-v2"
+    EMBEDDING_DIM: int = 384
+
 
 settings = Settings()
