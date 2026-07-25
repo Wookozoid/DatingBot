@@ -52,19 +52,17 @@ def get_embedding(user: User) -> list[float] | None:
     return json.loads(user.embedding)
 
 
-async def get_candidates(session: AsyncSession, user: User, limit: int) -> list[User]:
+async def get_candidates(session: AsyncSession, user: User) -> list[User]:
     """
-    Подбор кандидатов ПОКА БЕЗ ML!
+    Подбор ВСЕХ подходящих по полу/предпочтениям кандидатов.
+    Сортировка по похожести происходит отдельно
+    в bot/services/ranking_service.py - это уже ML-часть.
     """
-    query = (
-        select(User)
-        .where(
-            User.id != user.id,
-            User.gender == user.looking_for,
-            User.looking_for == user.gender,
-        )
-        .order_by(func.random())
-        .limit(limit)
+    query = select(User).where(
+        User.id != user.id,
+        User.gender == user.looking_for,
+        User.looking_for == user.gender,
+        User.embedding.is_not(None),
     )
     result = await session.execute(query)
     return list(result.scalars().all())

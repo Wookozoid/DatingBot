@@ -17,12 +17,11 @@ from aiogram.types import (
 
 from storage.database import get_session
 from storage.repository import get_user, get_candidates
+from bot.services.ranking import rank_candidates
 
 logger = logging.getLogger(__name__)
 
 router = Router(name="browsing")
-
-CANDIDATES_LIMIT = 10
 
 
 def _next_keyboard() -> InlineKeyboardMarkup:
@@ -59,8 +58,9 @@ async def cmd_find(message: Message, state: FSMContext) -> None:
         if user is None:
             await message.answer("Сначала создай анкету: нажми /start")
             return
-        candidates = await get_candidates(session, user, limit=CANDIDATES_LIMIT)
+        all_candidates = await get_candidates(session, user)
 
+    candidates = rank_candidates(user, all_candidates)
     logger.info("Пользователю %s подобрано %d кандидатов", message.from_user.id, len(candidates))
 
     await state.update_data(browse_queue=[c.id for c in candidates], browse_index=0)
