@@ -8,5 +8,6 @@ SQLAlchemy[asyncio]==2.0.36
 aiosqlite==0.20.0
 
 # ML-часть
+scikit-learn==1.5.2
 sentence-transformers==3.3.1
 numpy==1.26.4

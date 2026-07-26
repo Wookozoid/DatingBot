@@ -162,3 +162,21 @@ async def get_users_who_liked_me(session: AsyncSession, user_id: int) -> list[Us
     
     result = await session.execute(query)
     return list(result.scalars().all())
+
+
+async def get_all_embedded_users(session: AsyncSession) -> list[User]:
+    """
+    Все пользователи с уже посчитанным эмбеддингом
+    """
+    result = await session.execute(select(User).where(User.embedding.is_not(None)))
+    return list(result.scalars().all())
+
+
+async def set_user_cluster(session: AsyncSession, user_id: int, cluster_id: int) -> None:
+    """
+    Номер посчитанного кластера
+    """
+    user = await session.get(User, user_id)
+    if user is not None:
+        user.cluster_id = cluster_id
+        await session.commit()

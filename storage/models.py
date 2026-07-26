@@ -41,6 +41,8 @@ class User(Base):
 
     embedding: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    cluster_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
 
