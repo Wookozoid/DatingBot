@@ -20,5 +20,14 @@ class Settings(BaseSettings):
     N_CLUSTERS: int = 10
     MIN_USERS_FOR_CLUSTERING: int = 20
 
+    # Ппока решил гибридный сделать как веса от разных моделек
+    RANKING_WEIGHT_SIMILARITY: float = 0.6
+    RANKING_WEIGHT_CLUSTER: float = 0.15
+    RANKING_WEIGHT_FEEDBACK: float = 0.25
+
+    # Бонус за близость по возрасту
+    RANKING_WEIGHT_AGE: float = 0.2
+    AGE_SCALE_YEARS: float = 5.0
+
 
 settings = Settings()

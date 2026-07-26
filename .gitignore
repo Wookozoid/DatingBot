@@ -5,3 +5,4 @@ __pycache__/
 .venv/
 
 seed_db.py
+cluster_users.py

@@ -84,6 +84,22 @@ async def delete_user(session: AsyncSession, user_id: int) -> bool:
     return True
 
 
+async def update_bio(session: AsyncSession, user_id: int, bio_text: str, embedding: list[float]) -> bool:
+    """
+    Обновляет текст био и пересчитанный эмбеддинг.
+    cluster_id сбрасывается в None, так как старый кластер после смены текста уже неактуален
+    """
+    user = await session.get(User, user_id)
+    if user is None:
+        return False
+
+    user.bio_text = bio_text
+    user.embedding = json.dumps(embedding)
+    user.cluster_id = None
+    await session.commit()
+    return True
+
+
 async def record_interaction(
     session: AsyncSession,
     from_user_id: int,
@@ -180,3 +196,27 @@ async def set_user_cluster(session: AsyncSession, user_id: int, cluster_id: int)
     if user is not None:
         user.cluster_id = cluster_id
         await session.commit()
+
+
+async def get_liked_and_disliked_embeddings(
+    session: AsyncSession, user_id: int
+) -> tuple[list[list[float]], list[list[float]]]:
+    """
+    Эбеддинги тех, кого пользователь лайкнул, и тех, кого дизлайкнул.
+    """
+    liked_q = (
+        select(User.embedding)
+        .join(Interaction, Interaction.to_user_id == User.id)
+        .where(Interaction.from_user_id == user_id, Interaction.type == InteractionType.LIKE)
+    )
+    disliked_q = (
+        select(User.embedding)
+        .join(Interaction, Interaction.to_user_id == User.id)
+        .where(Interaction.from_user_id == user_id, Interaction.type == InteractionType.DISLIKE)
+    )
+    liked_raw = (await session.execute(liked_q)).scalars().all()
+    disliked_raw = (await session.execute(disliked_q)).scalars().all()
+
+    liked = [json.loads(e) for e in liked_raw if e is not None]
+    disliked = [json.loads(e) for e in disliked_raw if e is not None]
+    return liked, disliked

@@ -6,6 +6,7 @@
 import logging
 
 from aiogram import Router, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
@@ -18,7 +19,13 @@ from aiogram.types import (
 from bot.services.ranking import rank_candidates
 from storage.database import get_session
 from storage.models import InteractionType
-from storage.repository import get_user, get_candidates, get_users_who_liked_me, record_interaction
+from storage.repository import (
+    get_user,
+    get_candidates,
+    get_users_who_liked_me,
+    get_liked_and_disliked_embeddings,
+    record_interaction,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -68,8 +75,9 @@ async def cmd_find(message: Message, state: FSMContext) -> None:
             await message.answer("Сначала создай анкету: нажми /create")
             return
         all_candidates = await get_candidates(session, user)
+        liked_embeddings, disliked_embeddings = await get_liked_and_disliked_embeddings(session, user.id)
 
-    candidates = rank_candidates(user, all_candidates)
+    candidates = rank_candidates(user, all_candidates, liked_embeddings, disliked_embeddings)
     logger.info("Пользователю %s подобрано %d кандидатов", message.from_user.id, len(candidates))
 
     await state.update_data(browse_queue=[c.id for c in candidates], browse_index=0, browse_mode="find")
@@ -78,7 +86,7 @@ async def cmd_find(message: Message, state: FSMContext) -> None:
         await message.answer("Пока нет подходящих анкет. Попробуй позже.")
         return
 
-    await _show_candidate(message, state, "Анкеты закончились. Загляни чуть позже.")
+    await _show_candidate(message, state, "Анкеты закончились. Загляни чуть позже — база пополняется.")
 
 
 @router.message(Command("likes"))
@@ -98,6 +106,17 @@ async def cmd_likes(message: Message, state: FSMContext) -> None:
 
     await message.answer(f"Тебя лайкнули {len(likers)} человек. Смотрим?")
     await _show_candidate(message, state, "Это все, кто тебя лайкнул на текущий момент.")
+
+
+async def _safe_send_message(callback: CallbackQuery, chat_id: int, text: str) -> None:
+    """
+    Отправляем сообщение пользователю
+    Если чат недоступен просто логируем и не роняем весь хендлер
+    """
+    try:
+        await callback.bot.send_message(chat_id, text)
+    except TelegramBadRequest:
+        logger.warning("Не удалось отправить уведомление пользователю %s (чат недоступен)", chat_id)
 
 
 async def _notify_match(callback: CallbackQuery, candidate_id: int) -> None:
@@ -137,7 +156,7 @@ async def process_reaction(callback: CallbackQuery, state: FSMContext) -> None:
         logger.info("Новый мэтч: %s <-> %s", match.user_a_id, match.user_b_id)
         await _notify_match(callback, candidate_id)
     elif action == "like":
-        await callback.bot.send_message(candidate_id, "Тебя лайкнули! Для просмотра напиши /likes")
+        await _safe_send_message(callback, candidate_id, "Тебя лайкнули! Для просмотра напиши /likes")
 
     data = await state.get_data()
     mode = data.get("browse_mode", "find")
