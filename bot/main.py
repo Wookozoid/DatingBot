@@ -9,7 +9,9 @@ from aiogram.types import ErrorEvent
 from bot.config import settings
 from bot.handlers.browsing import router as browsing_router
 from bot.handlers.onboarding import router as onboarding_router
+from bot.handlers.fallback import router as fallback_router
 from bot.handlers.profile import router as profile_router
+from bot.handlers.matches import router as matches_router
 from bot.logger import setup_logging
 from bot.services.embedding import get_embedding_service
 from storage.database import init_db
@@ -20,6 +22,8 @@ dp = Dispatcher()
 dp.include_router(onboarding_router)
 dp.include_router(browsing_router)
 dp.include_router(profile_router)
+dp.include_router(matches_router)
+dp.include_router(fallback_router)
 
 
 @dp.errors()

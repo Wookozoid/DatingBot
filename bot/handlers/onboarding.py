@@ -1,11 +1,12 @@
 """
 Регистрация пользователя:
-спрашиваем, а потом сохраняем в БД.
+/start - приветствие, объясняет что за бот
+/create - спрашиваем анкету по шагам, а потом сохраняем в БД
 """
 import logging
 
 from aiogram import Router, F
-from aiogram.filters import CommandStart, StateFilter
+from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
@@ -43,19 +44,34 @@ def _gender_keyboard() -> ReplyKeyboardMarkup:
 
 
 @router.message(CommandStart())
-async def cmd_start(message: Message, state: FSMContext) -> None:
+async def cmd_start(message: Message) -> None:
+    async with get_session() as session:
+        existing = await get_user(session, message.from_user.id)
+
+    if existing:
+        await message.answer(f"С возвращением, {existing.name}! Посмотри /find или /matches.")
+        return
+
+    await message.answer(
+        "Привет! Это бот для знакомств\n"
+        "Чтобы создать анкету, напиши /create"
+    )
+
+
+@router.message(Command("create"))
+async def cmd_create(message: Message, state: FSMContext) -> None:
     async with get_session() as session:
         existing = await get_user(session, message.from_user.id)
 
     if existing:
         logger.debug("Пользователь %s уже зарегистрирован", message.from_user.id)
-        await message.answer(f"С возвращением, {existing.name}!")
+        await message.answer(f"У тебя уже есть анкета, {existing.name}! Посмотреть — /me")
         return
 
     logger.info("Пользователь %s начал регистрацию", message.from_user.id)
     await state.set_state(Onboarding.name)
     await message.answer(
-        "Привет! Давай создадим анкету\nКак тебя зовут?",
+        "Давай создадим анкету\nКак тебя зовут?",
         reply_markup=ReplyKeyboardRemove(),
     )
 

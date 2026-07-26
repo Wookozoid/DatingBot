@@ -1,4 +1,5 @@
 """
+/me посмотреть свою анкету
 /delete удаление своей анкеты. С подтверждением через кнопки
 """
 import logging
@@ -41,6 +42,19 @@ async def cmd_delete(message: Message) -> None:
     )
 
 
+@router.message(Command("me"))
+async def cmd_me(message: Message) -> None:
+    async with get_session() as session:
+        user = await get_user(session, message.from_user.id)
+
+    if user is None:
+        await message.answer("У тебя еще нет анкеты. Нажми /create, чтобы создать.")
+        return
+
+    caption = f"{user.name}, {user.age}\n{user.city}\n\n{user.bio_text}"
+    await message.answer_photo(user.photo_file_id, caption=caption)
+
+
 @router.callback_query(F.data == "delete_confirm")
 async def process_delete_confirm(callback: CallbackQuery) -> None:
     async with get_session() as session:
@@ -51,7 +65,7 @@ async def process_delete_confirm(callback: CallbackQuery) -> None:
 
     if deleted:
         logger.info("Пользователь %s удалил анкету", callback.from_user.id)
-        await callback.message.answer("Анкета удалена. Захочешь вернуться - просто напиши /start")
+        await callback.message.answer("Анкета удалена. Захочешь вернуться - просто напиши /create")
     else:
         await callback.message.answer("Анкеты не найдено... Похоже ты уже ее удалял.")
 
