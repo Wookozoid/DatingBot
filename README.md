@@ -48,6 +48,9 @@ Telegram-бот для знакомств.
 `/find` теперь сортирует кандидатов не только по семантической близости био, а по **гибридному скору**
 score = 0.6 * семантическая близость + 0.15 * бонус за общий кластер + 0.25 * implicit-фидбэк лайк/дизлайк + 0.2 * за близость по возрасту
 
+### Шаг 9 &mdash; контейнеризация (Docker)
+Проект упакован в Docker: `Dockerfile` + `docker-compose.yml`.
+
 ---
 
 ## Структура проекта
@@ -74,7 +77,10 @@ telegram_rag_bot/
 │   ├── repository.py      # функции доступа к данным
 │   └── bot.db             # файл SQLite
 ├── cluster_users.py       # пересчитывает кластеры интересов
-├── .env.example
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── .env.exa    mple
 ├── requirements.txt
 └── README.md
 ``` 
@@ -90,11 +96,12 @@ telegram_rag_bot/
 - [x] **Шаг 7** &mdash; лайки/дизлайки, мэтчи, уведомления, `/create`
 - [x] **Шаг 8** &mdash; кластеризация анкет по интересам
 - [x] **Шаг 9** &mdash; гибридный ранкинг
-- [ ] **Шаг 10** &mdash; docker-compose для деплоя
+- [x] **Шаг 10** &mdash; docker-compose для деплоя
 
 ## Стек
 
 - **Бот:** aiogram
 - **БД:** SQLite
 - **ORM:** SQLAlchemy
-- **ML (план):** sentence-transformers, scikit-learn, numpy, torch
+- **ML (план):** sentence-transformers, scikit-learn, numpy, pytorch
+- **Деплой:** Docker + docker-compose

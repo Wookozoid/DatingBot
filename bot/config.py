@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL_NAME: str = "paraphrase-multilingual-MiniLM-L12-v2"
     EMBEDDING_DIM: int = 384
 
-    N_CLUSTERS: int = 10
+    N_CLUSTERS: int = 90
     MIN_USERS_FOR_CLUSTERING: int = 20
 
     # Ппока решил гибридный сделать как веса от разных моделек

@@ -5,4 +5,5 @@ __pycache__/
 .venv/
 
 seed_db.py
-cluster_users.py
+inspect_clusters.py
+find_optimal_cluster.py

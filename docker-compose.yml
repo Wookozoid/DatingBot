@@ -1,0 +1,11 @@
+services:
+  bot:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - ./storage:/app/storage
+      - hf_cache:/root/.cache
+
+volumes:
+  hf_cache:
