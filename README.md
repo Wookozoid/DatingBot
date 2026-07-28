@@ -103,5 +103,5 @@ telegram_rag_bot/
 - **Бот:** aiogram
 - **БД:** SQLite
 - **ORM:** SQLAlchemy
-- **ML (план):** sentence-transformers, scikit-learn, numpy, pytorch
+- **ML:** sentence-transformers, scikit-learn, numpy, pytorch
 - **Деплой:** Docker + docker-compose
